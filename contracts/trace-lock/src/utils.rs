@@ -8,12 +8,13 @@ use ckb_std::{
 
 #[derive(Debug)]
 pub struct UnpackedTraceArgs {
+    pub lock_hash: [u8; 32], // looking for lock_hash as ownership approve
 
 }
 
 pub fn unpack_script_args(args: &[u8]) -> Result<UnpackedTraceArgs, TraceLockError> {
     Ok(UnpackedTraceArgs{
-        
+        lock_hash: args[0..32].try_into().map_err(|_| TraceLockError::InvalidArgs)?,
     })
 }
 

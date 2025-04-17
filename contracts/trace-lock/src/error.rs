@@ -8,7 +8,7 @@ pub enum TraceLockError {
     LengthNotEnough = -3,
     Encoding = -4,
     Unknown = -100,
-    InvalidInitialData = 101,
+    InvalidArgs = 101,
     InvalidTypeId = 102,
     InvalidFieldUpdate = 103,    // only backlinks is able to append, others are immutable
     DuplicatedOutputs = 107,     // there can not be two same ckbfs cell in output
