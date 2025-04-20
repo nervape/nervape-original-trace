@@ -54,6 +54,7 @@ pub fn main() -> Result<(), TraceLockError> {
                     let witness = load_witness(witnesse_index as usize, Source::Input)?;
                     raw_data.extend_from_slice(&witness);
                 }
+                let mut maybe_extension_operation = false;
 
                 // content is from 7th byte to the end
                 let content = &raw_data[7..];
@@ -72,16 +73,24 @@ pub fn main() -> Result<(), TraceLockError> {
                         }
                         _ => {
                             // do nothing
+                            maybe_extension_operation = true;
                         }
                     }
+                }
+                if maybe_extension_operation {
+                    return Ok(());
                 }
                 // return error if no operation log found
                 return Err(TraceLockError::NoOperationLogMatch);
 
-            } else { // still using trace lock, should be a TRANSFER OPERATION
+            } else { // still using trace lock, should be a TRANSFER OPERATION, or some other extension operations
+                let output_args: Vec<u8> = output_lock.args().unpack();
+                let output_lock_args = unpack_script_args(&output_args).map_err(|_| TraceLockError::InvalidScriptHash)?;
+
                 if !unpacked_args.feature_flags.enable_transfer {
                     return Err(TraceLockError::ForbidOperationTransfer);
                 }
+
                 let native_data: CKBFSDataNative = unpacked_data.into();
                 // load raw data from witnesses
                 let mut raw_data = Vec::new();
@@ -89,6 +98,8 @@ pub fn main() -> Result<(), TraceLockError> {
                     let witness = load_witness(witnesse_index as usize, Source::Input)?;
                     raw_data.extend_from_slice(&witness);
                 }
+
+                let mut maybe_extension_operation = false;
 
                 // content is from 7th byte to the end
                 let content = &raw_data[7..];
@@ -100,19 +111,24 @@ pub fn main() -> Result<(), TraceLockError> {
                     }
 
                     let operation = parse_operation(line, true)?;
+                    if !owner_lock_provided(unpacked_args.lock_hash) {
+                        return Err(TraceLockError::NoOwnerLockProvided);
+                    }
                     match operation {
                         Operation::Transfer((from, to)) => {
-                            if (from, to) == (unpacked_args.lock_hash, unpacked_args.lock_hash) {
-                                if !owner_lock_provided(from) {
-                                    return Err(TraceLockError::NoOwnerLockProvided);
-                                }
+                            if (from, to) == (unpacked_args.lock_hash, output_lock_args.lock_hash) {
+                                
                                 return Ok(());
                             }
                         }
                         _ => {
                             // do nothing
+                            maybe_extension_operation = true;
                         }
                     }
+                }
+                if maybe_extension_operation {
+                    return Ok(());
                 }
                 // return error if no operation log found
                 return Err(TraceLockError::NoOperationLogMatch);
