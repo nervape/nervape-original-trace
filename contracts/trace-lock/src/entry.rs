@@ -94,6 +94,11 @@ pub fn main() -> Result<(), TraceLockError> {
                 let content = &raw_data[7..];
                 // read line by line, and check if there is any operation log
                 for line in content.split(|c| *c == b'\n') {
+
+                    if line.is_empty(){ // skip empty line and end of line
+                        continue;
+                    }
+
                     let operation = parse_operation(line, true)?;
                     match operation {
                         Operation::Transfer((from, to)) => {
