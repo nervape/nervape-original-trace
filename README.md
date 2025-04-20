@@ -10,7 +10,7 @@ This lock will check if there is a new `APPEND` operation to the refer CKBFS cel
 2. Verify if the operation is a `TRANSFER` or `RELEASE` op;
 2.1. If operation is a `RELEASE` op, the lock will be free to unlock
 2.2. If operation is a `TRANSFER` op, the lock arg must be reset to target the transfer desitination `lock_hash` 
-
+3. If the type script is not CKBFS contract, then it will act as a normal proxy lock
 
 *This project was bootstrapped with [ckb-script-templates].*
 

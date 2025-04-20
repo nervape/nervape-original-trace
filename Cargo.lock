@@ -333,7 +333,7 @@ dependencies = [
  "ckb-fixed-hash",
  "ckb-hash",
  "ckb-occupied-capacity",
- "molecule",
+ "molecule 0.8.0",
  "numext-fixed-uint",
 ]
 
@@ -567,7 +567,7 @@ dependencies = [
  "derive_more 1.0.0",
  "golomb-coded-set",
  "merkle-cbt",
- "molecule",
+ "molecule 0.8.0",
  "numext-fixed-uint",
  "paste",
 ]
@@ -670,6 +670,15 @@ dependencies = [
  "quote",
  "serde_derive_internals",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ckbfs-types"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f1d76947909c12d40e16c8f8743021ce033f4ae92eeb398586343273df400b6"
+dependencies = [
+ "molecule 0.7.5",
 ]
 
 [[package]]
@@ -1164,6 +1173,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3be647b768db090acb35d5ec5db2b0e1f1de11133ca123b9eacf5137868f892a"
 dependencies = [
  "adler2",
+]
+
+[[package]]
+name = "molecule"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4fd9767ab5e5f2ea40f71ff4c8bdb633c50509052e093c2fdd0e390a749dfa3"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -1740,6 +1758,9 @@ name = "trace-lock"
 version = "0.1.0"
 dependencies = [
  "ckb-std",
+ "ckbfs-types",
+ "hex",
+ "molecule 0.7.5",
 ]
 
 [[package]]

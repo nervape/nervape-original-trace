@@ -9,11 +9,17 @@ pub enum TraceLockError {
     Encoding = -4,
     Unknown = -100,
     InvalidArgs = 101,
-    InvalidTypeId = 102,
-    InvalidFieldUpdate = 103,    // only backlinks is able to append, others are immutable
-    DuplicatedOutputs = 107,     // there can not be two same ckbfs cell in output
-    InvalidAppend = 108,         // append data updates not meet
+    NoOwnerLockProvided = 102,
+    IncompatibleCKBFSData = 103,
+    ForbidOperationRelease = 104,
+    ForbidOperationTransfer = 105,       // transfer operation data updates not meet
+    InvalidOperationLog = 106,
+    NoOperationLogMatch = 107,
+    InvalidRelease = 108,
     InvalidTransfer = 109,       // transfer operation data updates not meet
+    InvalidScriptHash = 110, // invalid lock script hash string in trace log
+    InvalidMint = 111,
+    
 }
 
 impl From<SysError> for TraceLockError {
