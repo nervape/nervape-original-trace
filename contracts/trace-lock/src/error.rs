@@ -1,5 +1,6 @@
 use ckb_std::error::SysError;
 
+#[derive(Debug)]
 /// Error
 #[repr(i8)]
 pub enum TraceLockError {

@@ -88,6 +88,7 @@ pub fn check_input_output_contain_same_cell(
 }
 
 
+#[derive(Debug)]
 pub enum Operation {
     Mint([u8; 32]), // MINT, TO:NEW_OWNER
     Release([u8; 32]), // RELEASE, FROM:FORMER_OWNER
@@ -136,17 +137,14 @@ pub fn parse_operation(operation_content: &[u8], enable_unknown_op: bool) -> Res
     // for example, a release operation: "RELEASE, FROM:FORMER_OWNER"
     // a transfer operation: "TRANSFER, FROM:FORMER_OWNER, TO:NEW_OWNER"
     let operation_str = String::from_utf8_lossy(operation_content);
-    let parts = operation_str.split(',').collect::<Vec<&str>>();
-    if parts.len() < 2 { // at least 2 parts
-        return Err(TraceLockError::InvalidOperationLog);
-    }
+    let (op, detail) = operation_str.split_once(',').unwrap_or_default();
 
     // trim head and tail spaces
-    let op = parts[0].trim();
+    let op = op.trim();
+    let detail = detail.trim();
 
     match op {
         "MINT" => {
-            let detail = parts[1].trim();
             let details = filter_comment(detail, Some(1))?;
             if details.len() == 1 && details[0].starts_with("TO:") {
                 let new_owner = details[0].split(':').nth(1).unwrap_or_default();
@@ -157,7 +155,6 @@ pub fn parse_operation(operation_content: &[u8], enable_unknown_op: bool) -> Res
             }
         },
         "RELEASE" => {
-            let detail = parts[1].trim();
             // check if the detail is in format: FROM:FORMER_OWNER
             let details = filter_comment(detail, Some(1))?;
             if details.len() == 1 && details[0].starts_with("FROM:") {
@@ -169,7 +166,6 @@ pub fn parse_operation(operation_content: &[u8], enable_unknown_op: bool) -> Res
             }
         },
         "GIVE_NAME" => {
-            let detail = parts[1].trim();
             let details = filter_comment(detail, None)?;
             if details.len() == 1 {
                 Ok(Operation::GiveName(details[0].to_string()))
@@ -178,7 +174,6 @@ pub fn parse_operation(operation_content: &[u8], enable_unknown_op: bool) -> Res
             }
         },
         "TRANSFER" => {
-            let detail = parts[1].trim();
             let details = filter_comment(detail, Some(2))?;
             if details.len() == 2 && details[0].starts_with("FROM:") && details[1].starts_with("TO:") {
                 let former_owner = details[0].split(':').nth(1).unwrap_or_default();
@@ -201,3 +196,13 @@ pub fn parse_operation(operation_content: &[u8], enable_unknown_op: bool) -> Res
     }
     
 }
+
+
+
+#[test]
+fn test_parse_operation() {
+    let operation_content = "TRANSFER,FROM:0x034fe8ed43a8a3e090ef955c6bcffacbc197a04f001043c2a74d40cff554c234cd,TO:0x034fe8ed43a8a3e090ef955c6bcffacbc197a04f001043c2a74d40cff554c234cd";
+    let operation = parse_operation(operation_content.as_bytes(), true);
+    println!("operation: {:?}", operation);
+}
+

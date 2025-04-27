@@ -29,7 +29,8 @@ pub fn main() -> Result<(), TraceLockError> {
     for in_index in trace_lock_in_input { // iterate all trace lock cell in input
         let type_script = load_cell_type(in_index, Source::GroupInput)?;
         let type_hash = load_cell_type_hash(in_index, Source::GroupInput)?.unwrap_or_default();
-        if type_script.unwrap_or_default().code_hash().unpack() == CKBFS_CODE_HASH {
+        let type_script_code_hash: [u8; 32] = type_script.unwrap_or_default().code_hash().unpack();
+        if type_script_code_hash[..] == CKBFS_CODE_HASH {
 
             // 1. find same type in output
             let output_index = QueryIter::new(load_cell_type_hash, Source::Output)
@@ -40,8 +41,9 @@ pub fn main() -> Result<(), TraceLockError> {
             // try unpack data
             let output_data = load_cell_data(output_index, Source::Output)?;
             let unpacked_data = CKBFSData::from_compatible_slice(&output_data).map_err(|_| TraceLockError::IncompatibleCKBFSData)?;
+            let unpacked_output_lock_code_hash: [u8; 32] = output_lock.code_hash().unpack();
 
-            if output_lock.code_hash().unpack()[..] != script_hash[..] {
+            if unpacked_output_lock_code_hash[..] != script_hash[..] {
                 // should be a REALEASE OPERATION
                 if !unpacked_args.feature_flags.enable_release {
                     return Err(TraceLockError::ForbidOperationRelease);

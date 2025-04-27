@@ -16,8 +16,8 @@ ckb_std::entry!(program_entry);
 ckb_std::default_alloc!(16384, 1258306, 64);
 
 mod entry;
-mod error;
-mod utils;
+pub mod error;
+pub mod utils;
 pub fn program_entry() -> i8 {
     match entry::main() {
         Ok(_) => 0,
