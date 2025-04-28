@@ -131,7 +131,7 @@ pub fn main() -> Result<(), TraceLockError> {
                                 return Ok(());
                             }
                         },
-                        Operation::GiveName(_) | Operation::Release(_) | Operation::Mint(_) => {}, // do not update extension flag
+                        Operation::Release(_) | Operation::Mint(_) => {}, // do not update extension flag
                         _ => {
                             // do nothing
                             maybe_extension_operation = true;
