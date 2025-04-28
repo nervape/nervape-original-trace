@@ -26,6 +26,13 @@ pub fn main() -> Result<(), TraceLockError> {
 
     let unpacked_args = unpack_script_args(&args)?;
 
+
+    // check if there is any owner lock provided
+    if !QueryIter::new(load_cell_lock_hash, Source::Input)
+            .any(|lock_hash| lock_hash[..] == unpacked_args.lock_hash[..]) {
+                return Err(TraceLockError::NoOwnerLockProvided);
+    }
+
     for in_index in trace_lock_in_input { // iterate all trace lock cell in input
         let type_script = load_cell_type(in_index, Source::GroupInput)?;
         let type_hash = load_cell_type_hash(in_index, Source::GroupInput)?.unwrap_or_default();
