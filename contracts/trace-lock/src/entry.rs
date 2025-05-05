@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use ckbfs_types::{CKBFSData, CKBFSDataNative};
 use trace_lock::CKBFS_CODE_HASH;
 use crate::{error::TraceLockError, utils::{parse_operation, unpack_script_args, Operation}};
-use ckb_std::{ckb_constants::Source, ckb_types::prelude::{ShouldBeOk, Unpack}, high_level::{load_cell_data, load_cell_lock, load_cell_lock_hash, load_cell_type, load_cell_type_hash, load_script, load_script_hash, load_witness, QueryIter}};
+use ckb_std::{ckb_constants::Source, ckb_types::prelude::{ShouldBeOk, Unpack}, high_level::{load_cell_data, load_cell_data_hash, load_cell_lock, load_cell_lock_hash, load_cell_type, load_cell_type_hash, load_script, load_script_hash, load_witness, QueryIter}};
 use molecule::prelude::Entity;
 
 fn owner_lock_provided(owner_lock_hash: [u8; 32]) -> bool {
@@ -47,6 +47,7 @@ pub fn main() -> Result<(), TraceLockError> {
 
             // try unpack data
             let output_data = load_cell_data(output_index, Source::Output)?;
+
             let unpacked_data = CKBFSData::from_compatible_slice(&output_data).map_err(|_| TraceLockError::IncompatibleCKBFSData)?;
             let unpacked_output_lock_code_hash: [u8; 32] = output_lock.code_hash().unpack();
 
@@ -126,9 +127,19 @@ pub fn main() -> Result<(), TraceLockError> {
                     }
                     match operation {
                         Operation::Transfer((from, to)) => {
+                            
+                            // check if this lock hash changed
+                            let input_lock_hash = load_cell_lock_hash(in_index, Source::Input)?;
+                            let output_lock_hash = load_cell_lock_hash(output_index, Source::Output)?;
+
+                            if input_lock_hash[..] == output_lock_hash[..] {
+                                return Err(TraceLockError::InvalidOperationLog); // lock hash should be changed in transfer operation
+                            }
+
                             if (from, to) == (unpacked_args.lock_hash, output_lock_args.lock_hash) {
-                                
                                 return Ok(());
+                            } else {
+                                return Err(TraceLockError::InvalidOperationLog); // maybe not correct set of from and to
                             }
                         },
                         Operation::Release(_) | Operation::Mint(_) => {}, // do not update extension flag
